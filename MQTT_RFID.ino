@@ -27,6 +27,7 @@ const char* server = "ENTER SERVER ADDRESS";
 char* topic = "/rfid";
 String strID="";
 
+
 MFRC522 rfid(SS_PIN, RST_PIN);
 MFRC522::MIFARE_Key key;
 
@@ -67,7 +68,7 @@ void reconnect() {
   }
 }
 
-char* rfidCard(){
+String rfidCard(){
   strID="";
   if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial())
   return "";
@@ -75,8 +76,7 @@ char* rfidCard(){
     strID += (rfid.uid.uidByte[i] < 0x10 ? "0" : "") + String(rfid.uid.uidByte[i], HEX) + (i!=3 ? ":" : "");
   }
   strID.toUpperCase();
-  Serial.println(strID);
-return (char*) strID.c_str();
+return strID;
 }
 
 
@@ -95,10 +95,10 @@ void loop() {
   }
   client.loop();
   if (client.connected()){
-    char* topic = "/rfid";
-    if (rfidCard() != ""){
-      Serial.println(rfidCard());
-      if (client.publish(topic, rfidCard())) {
+    String rfidCardValue = rfidCard();
+    if (rfidCardValue != ""){
+      Serial.println(rfidCardValue);
+      if (client.publish(topic, (char*) rfidCardValue.c_str())) {
       Serial.println("Publish ok");
       }   
     }
